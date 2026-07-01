@@ -19,6 +19,10 @@ BookMemoria is a book tracking web application built from scratch using PHP.
 - CSS
 - JavaScript
 
+## Test Run
+
+- php -S localhost:8000 -t public
+
 ## Status
 
 🚧 Currently under development.

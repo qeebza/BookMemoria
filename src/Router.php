@@ -57,7 +57,8 @@ class Router {
                 return;
             }
         }
-        throw new Exception("Page not found");
+        http_response_code(404);
+        echo "404 - Page not found";
     }
 
 
