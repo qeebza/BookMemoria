@@ -5,10 +5,38 @@ declare(strict_types=1);
 class Router {
     private array $routes = [];
 
-    // Adding path array
-    public function add(string $path, Closure $handler): void {
-        $this->routes[$path] = $handler;
+    // Adding array path with the http method to handler function
+    public function add(
+        string $method, 
+        string $path, 
+        Closure $handler
+        ): void {
+        // capitalize http request
+        $method = strtoupper($method);
+        $this->routes[$method][$path] = $handler;
     }
+    
+    // All http request functions
+    public function get(string $path, Closure $handler): void {
+        $this->add('GET', $path, $handler);
+    }
+
+    public function post(string $path, Closure $handler): void {
+        $this->add('POST', $path, $handler);
+    }
+
+    public function put(string $path, Closure $handler): void {
+        $this->add('PUT', $path, $handler);
+    }
+
+    public function patch(string $path, Closure $handler): void {
+        $this->add('PATCH', $path, $handler);
+    }
+    
+    public function delete(string $path, Closure $handler): void {
+        $this->add('DELETE', $path, $handler);
+    }
+
 
     // Removing path array
     public function remove(string $path): void {
@@ -20,13 +48,16 @@ class Router {
     }
 
     // Dispatching path array
-    public function dispatch(string $path): void {
-        if(array_key_exists($path, $this->routes)) {
-            $handler = $this->routes[$path];
-            call_user_func($handler);
-        } else {
-            throw new Exeption("Page not found");
+    public function dispatch(string $method, string $path): void {
+        $method = strtoupper($method);
+        if (array_key_exists($method, $this->routes)) {
+            if(array_key_exists($path, $this->routes[$method])) {
+                $handler = $this->routes[$method][$path];
+                $handler();
+                return;
+            }
         }
+        throw new Exception("Page not found");
     }
 
 
