@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . "/../src/Helpers.php";
+
 class Router {
     private array $routes = [];
 
@@ -58,25 +60,6 @@ class Router {
             }
         }
         http_response_code(404);
-        echo "404 - Page not found";
+        view("404");
     }
-
-
-/*
-    public function dispatch(string $path): void
-    {
-        foreach ($this->routes as $route => $handler) {
-            $pattern = preg_replace("#\{\w+\}#", "([^/]+)", $route);
-
-            if (preg_match("#^$pattern$#", $path, $matches)) {
-                array_shift($matches);
-
-                call_user_func_array($handler, $matches);
-                return;
-            }
-        }
-
-        throw new Exception("Page not found");
-    }
-*/
 }
