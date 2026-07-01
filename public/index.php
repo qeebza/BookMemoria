@@ -9,11 +9,11 @@ require __DIR__ . "/../src/Router.php";
 $router = new Router();
 
 $router->get("/", function() {
-    echo "This is the homepage";
+    require __DIR__ . "/../app/Views/home.php";
 });
 
 $router->get("/login", function() {
-    echo "This is the login page";
+    require __DIR__ . "/../app/Views/login.php";
 });
 
 $router->dispatch($method, $path);
