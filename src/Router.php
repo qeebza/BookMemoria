@@ -51,7 +51,9 @@ class Router {
 
     // Dispatching path array
     public function dispatch(string $method, string $path): void {
+        $response = new Response();
         $method = strtoupper($method);
+
         if (array_key_exists($method, $this->routes)) {
             if(array_key_exists($path, $this->routes[$method])) {
                 $handler = $this->routes[$method][$path];
@@ -59,7 +61,7 @@ class Router {
                 return;
             }
         }
-        http_response_code(404);
+        $response->status(404);
         view("404");
     }
 }
