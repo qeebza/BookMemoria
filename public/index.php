@@ -6,13 +6,13 @@ require_once __DIR__ . "/../vendor/autoload.php";
 require_once __DIR__ . "/../src/helpers.php";
 
 use Src\Router;
+use Src\Request;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-$method = $_SERVER["REQUEST_METHOD"];
-$path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+$request = new Request($_SERVER);
 $router = new Router();
 
 require_once __DIR__ . "/../routes/web.php";
 
-$router->dispatch($method, $path);
+$router->dispatch($request->method(), $request->path());
