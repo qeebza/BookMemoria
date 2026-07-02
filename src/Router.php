@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . "/../src/helpers.php";
+namespace Src;
 
 class Router {
     private array $routes = [];
