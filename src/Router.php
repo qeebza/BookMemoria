@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . "/../src/Helpers.php";
+require_once __DIR__ . "/../src/helpers.php";
 
 class Router {
     private array $routes = [];
@@ -11,7 +11,7 @@ class Router {
     public function add(
         string $method, 
         string $path, 
-        Closure $handler
+        callable $handler
         ): void {
         // capitalize http request
         $method = strtoupper($method);
@@ -19,23 +19,23 @@ class Router {
     }
     
     // All http request functions
-    public function get(string $path, Closure $handler): void {
+    public function get(string $path, callable $handler): void {
         $this->add('GET', $path, $handler);
     }
 
-    public function post(string $path, Closure $handler): void {
+    public function post(string $path, callable $handler): void {
         $this->add('POST', $path, $handler);
     }
 
-    public function put(string $path, Closure $handler): void {
+    public function put(string $path, callable $handler): void {
         $this->add('PUT', $path, $handler);
     }
 
-    public function patch(string $path, Closure $handler): void {
+    public function patch(string $path, callable $handler): void {
         $this->add('PATCH', $path, $handler);
     }
     
-    public function delete(string $path, Closure $handler): void {
+    public function delete(string $path, callable $handler): void {
         $this->add('DELETE', $path, $handler);
     }
 
