@@ -15,6 +15,12 @@
     <main>
         <h2>Login</h2>
 
+        <?php if (!empty($error)): ?>
+            <p style="color: red;">
+                <?= $error ?>
+            </p>
+        <?php endif; ?>
+
         <form action="/login" method="POST">
             <div>
                 <label for="email">Email</label>

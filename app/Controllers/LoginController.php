@@ -19,7 +19,9 @@ class LoginController {
         $password = $this->request->input("password");
 
         if (empty($email) || empty($password)) {
-            echo "Email and password are required.";
+            view("login", [
+                "error" => "Email and password are required"
+            ]);
             return;
         }
 
