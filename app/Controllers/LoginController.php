@@ -18,8 +18,11 @@ class LoginController {
         $email = $this->request->input("email");
         $password = $this->request->input("password");
 
-        echo "Email: " . $email;
-        echo "<br>";
-        echo "Password: " . $password;
+        if (empty($email) || empty($password)) {
+            echo "Email and password are required.";
+            return;
+        }
+
+        echo "Login form received.";
     }
 }
