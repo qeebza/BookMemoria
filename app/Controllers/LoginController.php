@@ -18,22 +18,28 @@ class LoginController {
         $email = $this->request->input("email");
         $password = $this->request->input("password");
 
-        if (empty($email) || empty($password)) {
-            view("login", [
-                "error" => "Email and password are required", 
-                "email" => $email
-            ]);
-            return;
-        }
+        $error = $this->validateLogin($email, $password);
 
-        if (!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+        if ($error !== null) {
             view("login", [
-                "error" => "Please enter a valid email address.",
+                "error" => $error, 
                 "email" => $email
             ]);
             return;
         }
 
         echo "Login form received.";
+    }
+
+    private function validateLogin(string $email, string $password): ?string {
+        if (empty($email) || empty($password)) {
+            return "Email and password are required.";
+        }
+
+        if(!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+            return "Please enter a valid email address.";
+        }
+
+        return null;
     }
 }
