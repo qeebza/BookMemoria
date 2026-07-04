@@ -8,4 +8,8 @@ class LoginController {
     public function index(): void {
         view("login");
     }
+
+    public function login(): void {
+        echo "Login form submitted";
+    }
 }
