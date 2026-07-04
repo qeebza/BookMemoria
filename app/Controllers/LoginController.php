@@ -26,6 +26,14 @@ class LoginController {
             return;
         }
 
+        if (!filter_var($email,FILTER_VALIDATE_EMAIL)) {
+            view("login", [
+                "error" => "Please enter a valid email address.",
+                "email" => $email
+            ]);
+            return;
+        }
+
         echo "Login form received.";
     }
 }
