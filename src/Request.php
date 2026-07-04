@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Src;
 
 class Request {
-    public function __construct(array $server) {
-        $this->server = $server;
+    public function __construct(private array $server) {
     }
 
     public function method(): string {

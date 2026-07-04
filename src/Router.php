@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Src;
+use Exception;
 
 class Router {
     private array $routes = [];
@@ -45,7 +46,7 @@ class Router {
         if(array_key_exists($path, $this->routes)){
             unset($this->routes[$path]);
         } else {
-            throw new Exception("The path is not exist");
+            throw new Exception("You must be 18 or older.");
         }
     }
 
