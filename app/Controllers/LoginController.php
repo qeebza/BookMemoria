@@ -20,7 +20,8 @@ class LoginController {
 
         if (empty($email) || empty($password)) {
             view("login", [
-                "error" => "Email and password are required"
+                "error" => "Email and password are required", 
+                "email" => $email
             ]);
             return;
         }

@@ -24,7 +24,12 @@
         <form action="/login" method="POST">
             <div>
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email">
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email"
+                    value="<?= htmlspecialchars($email ?? '') ?>"
+                >
             </div>
 
             <div>
