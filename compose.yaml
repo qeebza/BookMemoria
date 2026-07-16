@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: bookmemoria-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: bookmemoria
+      POSTGRES_USER: bookmemoria
+      POSTGRES_PASSWORD: secret
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - bookmemoria_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  bookmemoria_postgres_data:
