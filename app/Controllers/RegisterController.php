@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use PDO;
+use PDOExeption;
 use Src\Request;
 
 class RegisterController {
-    public function __construct(private Request $request) {
+    public function __construct(
+        private Request $request,
+        private PDO $database
+        ) {
     }
 
     public function index(): void {
@@ -36,8 +41,29 @@ class RegisterController {
 
             return;
         }
+        
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        echo "Registration data is valid.";
+        try {
+            $statement = $this->database->prepare(
+                "INSERT INTO users (name, email, password)
+                VALUES (:name, :email, :password)"
+            );
+
+            $statement->execute([
+                "name" => $name,
+                "email" => $email,
+                "password" => $hashedPassword
+            ]);
+
+            echo "Account created successfully.";
+        } catch (PDOException $exception) {
+            view("register", [
+                "error" => "An account with this email already exist.",
+                "name" => $name,
+                "email" => $email
+            ]);
+        }
     }
 
     private function validateRegistration(
