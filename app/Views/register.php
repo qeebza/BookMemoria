@@ -16,6 +16,12 @@
     <main>
         <h2>Create Account</h2>
 
+        <?php if (!empty($error)): ?>
+            <p>
+                <?= htmlspecialchars($error) ?>
+            </p>
+        <?php endif; ?>
+
         <form action="/register" method="POST">
             <div>
                 <label for="name">Name</label>
@@ -23,6 +29,7 @@
                     type="text"
                     id="name"
                     name="name"
+                    value="<?= htmlspecialchars($name ?? '') ?>"
                 >
             </div>
 
@@ -32,6 +39,7 @@
                     type="email"
                     id="email"
                     name="email"
+                    value="<?= htmlspecialchars($email ?? '') ?>"
                 >
             </div>
 
