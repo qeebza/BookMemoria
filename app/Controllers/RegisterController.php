@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use PDO;
-use PDOExeption;
+use PDOException;
 use Src\Request;
 
 class RegisterController {
