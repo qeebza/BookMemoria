@@ -17,7 +17,7 @@
 
         <?php if (!empty($error)): ?>
             <p style="color: red;">
-                <?= $error ?>
+                <?= htmlspecialchars($error) ?>
             </p>
         <?php endif; ?>
 
