@@ -7,7 +7,7 @@ use App\Controllers\LoginController;
 use App\Controllers\RegisterController;
 
 $homeController = new HomeController();
-$loginController = new LoginController($request);
+$loginController = new LoginController($request, $pdo);
 $registerController = new RegisterController($request, $pdo);
 
 $router->get("/", [$homeController, "index"]);

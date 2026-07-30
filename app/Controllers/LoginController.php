@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use PDO;
 use Src\Request;
 
 class LoginController {
-    public function __construct(private Request $request) {
+    public function __construct(
+        private Request $request,
+        private PDO $database
+        ) {
     }
 
     public function index(): void {
@@ -28,7 +32,32 @@ class LoginController {
             return;
         }
 
-        echo "Login form received.";
+        $statement = $this->database->prepare(
+            "SELECT id, name, email, password
+            FROM users
+            WHERE email = :email
+            LIMIT 1"
+        );
+
+        $statement->execute([
+            "email" => $email
+        ]);
+
+        $user = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if (
+            $user === false ||
+            !password_verify($password, $user["password"])
+        ) {
+            view("login", [
+                "error" => "Invalid email or password.",
+                "email" => $email
+            ]);
+
+            return;
+        }
+
+        echo "Login successful.";
     }
 
     private function validateLogin(string $email, string $password): ?string {
