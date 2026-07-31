@@ -92,4 +92,41 @@ class RatingController
         header("Location: /books/show?book_id=" . $bookId, true, 303);
         exit;
     }
+
+    public function delete(): void
+    {
+        if (!isset($_SESSION["user"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $bookId = filter_var(
+            $this->request->input("book_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        if ($bookId === false) {
+            http_response_code(422);
+            echo "Invalid book.";
+            return;
+        }
+
+        $deleteStatement = $this->database->prepare(
+            "DELETE FROM ratings
+            WHERE book_id = :book_id
+              AND user_id = :user_id"
+        );
+
+        $deleteStatement->execute([
+            "book_id" => $bookId,
+            "user_id" => $_SESSION["user"]["id"]
+        ]);
+
+        header(
+            "Location: /books/show?book_id=" . $bookId,
+            true,
+            303
+        );
+        exit;
+    }
 }
