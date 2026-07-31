@@ -13,6 +13,16 @@
     </nav>
 
     <main>
+        <?php if (isset($_SESSION["user"])): ?>
+            <p>
+                Welcome, <?= htmlspecialchars($_SESSION["user"]["name"]) ?>
+            </p>
+
+            <form action="/logout" method="POST">
+                <button type="submit">Logout</button>
+            </form>
+        <?php endif; ?>
+
         <section>
             <h2>Track your books. Remember your reading journey.</h2>
             <p>
