@@ -57,7 +57,16 @@ class LoginController {
             return;
         }
 
-        echo "Login successful.";
+        session_regenerate_id(true);
+
+        $_SESSION["user"] = [
+            "id" => $user["id"],
+            "name" => $user["name"],
+            "email" => $user["email"]
+        ];
+
+        header("Location: /");
+        exit;
     }
 
     private function validateLogin(string $email, string $password): ?string {
