@@ -65,7 +65,7 @@ class LoginController {
             "email" => $user["email"]
         ];
 
-        header("Location: /");
+        header("Location: /dashboard");
         exit;
     }
 
