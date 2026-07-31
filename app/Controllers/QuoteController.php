@@ -77,4 +77,102 @@ class QuoteController
         header("Location: /books/show?book_id=" . $bookId);
         exit;
     }
+
+    public function update(): void
+    {
+        if (!isset($_SESSION["user"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $quoteId = filter_var(
+            $this->request->input("quote_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        $bookId = filter_var(
+            $this->request->input("book_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        $quoteText = trim(
+            $this->request->input("quote_text", "")
+        );
+
+        if (
+            $quoteId === false ||
+            $bookId === false ||
+            $quoteText === ""
+        ) {
+            http_response_code(422);
+            echo "A valid quote is required.";
+            return;
+        }
+
+        $updateStatement = $this->database->prepare(
+            "UPDATE quotes
+            SET quote_text = :quote_text
+            WHERE quote_id = :quote_id
+              AND book_id = :book_id
+              AND user_id = :user_id"
+        );
+
+        $updateStatement->execute([
+            "quote_text" => $quoteText,
+            "quote_id" => $quoteId,
+            "book_id" => $bookId,
+            "user_id" => $_SESSION["user"]["id"]
+        ]);
+
+        header(
+            "Location: /books/show?book_id=" . $bookId,
+            true,
+            303
+        );
+        exit;
+    }
+
+    public function delete(): void
+    {
+        if (!isset($_SESSION["user"])) {
+            header("Location: /login");
+            exit;
+        }
+
+        $quoteId = filter_var(
+            $this->request->input("quote_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        $bookId = filter_var(
+            $this->request->input("book_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        if ($quoteId === false || $bookId === false) {
+            http_response_code(422);
+            echo "Invalid quote.";
+            return;
+        }
+
+        $deleteStatement = $this->database->prepare(
+            "DELETE FROM quotes
+            WHERE quote_id = :quote_id
+              AND book_id = :book_id
+              AND user_id = :user_id"
+        );
+
+        $deleteStatement->execute([
+            "quote_id" => $quoteId,
+            "book_id" => $bookId,
+            "user_id" => $_SESSION["user"]["id"]
+        ]);
+
+        header(
+            "Location: /books/show?book_id=" . $bookId,
+            true,
+            303
+        );
+        exit;
+    }
 }
