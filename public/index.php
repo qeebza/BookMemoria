@@ -10,7 +10,7 @@ use Src\Router;
 use Src\Request;
 use Src\Database;
 
-$request = new Request($_SERVER, $_POST);
+$request = new Request($_SERVER, $_POST, $_GET);
 $router = new Router();
 
 $database = new Database();
