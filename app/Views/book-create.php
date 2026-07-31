@@ -51,6 +51,29 @@
             >
         </div>
 
+        <fieldset>
+            <legend>Genres</legend>
+
+            <?php foreach ($genres ?? [] as $genre): ?>
+                <?php $genreId = (int) $genre["genre_id"]; ?>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="genre_ids[]"
+                        value="<?= $genreId ?>"
+                        <?= in_array(
+                            $genreId,
+                            $selectedGenreIds ?? [],
+                            true
+                        ) ? "checked" : "" ?>
+                    >
+
+                    <?= htmlspecialchars($genre["genre_name"]) ?>
+                </label>
+            <?php endforeach; ?>
+        </fieldset>
+
         <button type="submit">Add Book</button>
     </form>
 

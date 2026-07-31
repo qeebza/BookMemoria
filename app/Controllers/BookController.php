@@ -17,7 +17,9 @@ class BookController {
             exit;
         }
 
-        view("book-create");
+        view("book-create", [
+            "genres" => $this->getGenres()
+        ]);
     }
 
     public function store(): void {
@@ -30,6 +32,16 @@ class BookController {
         $author = trim($_POST["author"] ?? "");
         $description = trim($_POST["description"] ?? "");
         $totalPage = $_POST["total_page"] ?? "";
+        $genreIds = $_POST["genre_ids"] ?? [];
+
+        if (!is_array($genreIds)) {
+            $genreIds = [];
+        }
+
+        $genreIds = array_values(array_unique(array_filter(
+            array_map("intval", $genreIds),
+            static fn (int $genreId): bool => $genreId > 0
+        )));
 
         if (
             $title === "" ||
@@ -45,7 +57,9 @@ class BookController {
                 "title" => $title,
                 "author" => $author,
                 "description" => $description,
-                "totalPage" => $totalPage
+                "totalPage" => $totalPage,
+                "genres" => $this->getGenres(),
+                "selectedGenreIds" => $genreIds
             ]);
 
             return;
@@ -99,6 +113,18 @@ class BookController {
                 "book_id" => $bookId
             ]);
 
+            $genreStatement = $this->database->prepare(
+                "INSERT INTO book_genres (book_id, genre_id)
+                VALUES (:book_id, :genre_id)"
+            );
+
+            foreach ($genreIds as $genreId) {
+                $genreStatement->execute([
+                    "book_id" => $bookId,
+                    "genre_id" => $genreId
+                ]);
+            }
+
             $this->database->commit();
 
             header("Location: /dashboard");
@@ -113,8 +139,20 @@ class BookController {
                 "title" => $title,
                 "author" => $author,
                 "description" => $description,
-                "totalPage" => $totalPage
+                "totalPage" => $totalPage,
+                "genres" => $this->getGenres(),
+                "selectedGenreIds" => $genreIds
             ]);
         }
+    }
+
+    private function getGenres(): array {
+        $statement = $this->database->query(
+            "SELECT genre_id, genre_name
+            FROM genres
+            ORDER BY genre_name"
+        );
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
