@@ -24,6 +24,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Author</th>
+                    <th>Genres</th>
                     <th>Status</th>
                     <th>Progress</th>
                     <th>Started</th>
@@ -36,11 +37,19 @@
                 <?php foreach ($books as $book): ?>
                     <tr>
                         <td>
-                            <?= htmlspecialchars($book["title"]) ?>
+                            <a href="/books/show?book_id=<?= (int) $book["book_id"] ?>">
+                                <?= htmlspecialchars($book["title"]) ?>
+                            </a>
                         </td>
 
                         <td>
                             <?= htmlspecialchars($book["author"]) ?>
+                        </td>
+
+                        <td>
+                            <?= !empty($book["genres"])
+                                ? htmlspecialchars($book["genres"])
+                                : "No genres" ?>
                         </td>
 
                         <td>
