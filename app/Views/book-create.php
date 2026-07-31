@@ -33,6 +33,27 @@
         </div>
 
         <div>
+            <label for="isbn">ISBN (optional)</label>
+            <input
+                type="text"
+                id="isbn"
+                name="isbn"
+                value="<?= htmlspecialchars($isbn ?? "") ?>"
+                maxlength="17"
+                placeholder="9780385533225"
+            >
+
+            <small>
+                ISBN-10 or ISBN-13.
+                <a
+                    href="https://isbnsearch.org/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >Find the ISBN on ISBN Search</a>
+            </small>
+        </div>
+
+        <div>
             <label for="description">Description</label>
             <textarea
                 id="description"

@@ -3,6 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($book["title"]) ?> - BookMemoria</title>
+
+    <style>
+        .book-cover,
+        .book-cover-placeholder {
+            width: 200px;
+            height: 300px;
+            border-radius: 6px;
+        }
+
+        .book-cover {
+            display: block;
+            object-fit: cover;
+        }
+
+        .book-cover[hidden] {
+            display: none;
+        }
+
+        .book-cover[hidden] {
+            display: none;
+        }
+
+        .book-cover-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 12px;
+            background: #eeeeee;
+            color: #666666;
+            text-align: center;
+        }
+
+        .book-cover-placeholder[hidden] {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <a href="/dashboard">&larr; Back to dashboard</a>
@@ -13,9 +50,55 @@
 
     <h1><?= htmlspecialchars($book["title"]) ?></h1>
 
+    <?php
+        $coverUrl = $book["cover_page_path"] ?? "";
+
+        if ($coverUrl === "" && !empty($book["isbn"])) {
+            $coverUrl = "https://covers.openlibrary.org/b/isbn/"
+                . rawurlencode($book["isbn"])
+                . "-L.jpg?default=false";
+        }
+    ?>
+
+    <?php if ($coverUrl !== ""): ?>
+        <img
+            class="book-cover"
+            src="<?= htmlspecialchars($coverUrl) ?>"
+            alt="Cover of <?= htmlspecialchars($book["title"]) ?>"
+            onerror="this.hidden=true; this.nextElementSibling.hidden=false"
+        >
+
+        <div class="book-cover-placeholder" hidden>No cover available</div>
+    <?php else: ?>
+        <div class="book-cover-placeholder">No cover available</div>
+    <?php endif; ?>
+
     <p>
         Author: <?= htmlspecialchars($book["author"]) ?>
     </p>
+
+    <?php if (!empty($book["isbn"])): ?>
+        <?php $encodedIsbn = rawurlencode($book["isbn"]); ?>
+
+        <p>
+            ISBN:
+            <a
+                href="https://isbnsearch.org/isbn/<?= $encodedIsbn ?>"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <?= htmlspecialchars($book["isbn"]) ?>
+            </a>
+
+            &middot;
+
+            <a
+                href="https://covers.openlibrary.org/b/isbn/<?= $encodedIsbn ?>-L.jpg?default=false"
+                target="_blank"
+                rel="noopener noreferrer"
+            >Open cover image</a>
+        </p>
+    <?php endif; ?>
 
     <p>
         Genres:

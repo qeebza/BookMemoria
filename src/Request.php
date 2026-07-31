@@ -9,7 +9,8 @@ class Request
     public function __construct(
         private array $server,
         private array $post,
-        private array $queryParameters = []
+        private array $queryParameters = [],
+        private array $files = []
     ) {
     }
 
@@ -31,5 +32,12 @@ class Request
     public function query(string $key, mixed $default = null): mixed
     {
         return $this->queryParameters[$key] ?? $default;
+    }
+
+    public function file(string $key): ?array
+    {
+        $file = $this->files[$key] ?? null;
+
+        return is_array($file) ? $file : null;
     }
 }

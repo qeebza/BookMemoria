@@ -16,5 +16,8 @@
             "Src\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "cloudinary/cloudinary_php": "*",
+        "vlucas/phpdotenv": "*"
+    }
 }

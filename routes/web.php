@@ -17,7 +17,7 @@ $loginController = new LoginController($request, $pdo);
 $registerController = new RegisterController($request, $pdo);
 $logoutController = new LogoutController();
 $dashboardController = new DashboardController($pdo);
-$bookController = new BookController($request, $pdo);
+$bookController = new BookController($request, $pdo, $cloudinary);
 $readingRecordController = new ReadingRecordController($request, $pdo);
 $quoteController = new QuoteController($request, $pdo);
 $ratingController = new RatingController($request, $pdo);
@@ -37,6 +37,8 @@ $router->get("/books/show", [$bookController, "show"]);
 $router->get("/books/edit", [$bookController, "edit"]);
 $router->post("/books", [$bookController, "store"]);
 $router->post("/books/update", [$bookController, "update"]);
+$router->post("/books/delete", [$bookController, "delete"]);
+$router->post("/books/cover/remove", [$bookController, "removeCover"]);
 
 $router->post("/reading-records/update",[$readingRecordController, "update"]);
 
