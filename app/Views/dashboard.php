@@ -12,6 +12,7 @@
     </p>
 
     <a href="/">Home</a>
+    <a href="/books/create">Add Book</a>
 
     <form action="/logout" method="POST">
         <button type="submit">Logout</button>
