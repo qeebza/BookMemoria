@@ -34,12 +34,17 @@ $router->get("/dashboard", [$dashboardController, "index"]);
 
 $router->get("/books/create", [$bookController, "create"]);
 $router->get("/books/show", [$bookController, "show"]);
+$router->get("/books/edit", [$bookController, "edit"]);
 $router->post("/books", [$bookController, "store"]);
+$router->post("/books/update", [$bookController, "update"]);
 
 $router->post("/reading-records/update",[$readingRecordController, "update"]);
 
 $router->post("/quotes", [$quoteController, "store"]);
+$router->post("/quotes/update", [$quoteController, "update"]);
+$router->post("/quotes/delete", [$quoteController, "delete"]);
 
 $router->post("/ratings", [$ratingController, "store"]);
+$router->post("/ratings/delete", [$ratingController, "delete"]);
 
 $router->post("/logout", [$logoutController, "logout"]);

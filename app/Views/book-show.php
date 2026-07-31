@@ -7,6 +7,10 @@
 <body>
     <a href="/dashboard">&larr; Back to dashboard</a>
 
+    <a href="/books/edit?book_id=<?= (int) $book["book_id"] ?>">
+        Edit Book
+    </a>
+
     <h1><?= htmlspecialchars($book["title"]) ?></h1>
 
     <p>
@@ -81,6 +85,18 @@
 
     <p id="rating-message"></p>
 
+    <?php if ($rating !== false): ?>
+        <form action="/ratings/delete" method="POST">
+            <input
+                type="hidden"
+                name="book_id"
+                value="<?= (int) $book["book_id"] ?>"
+            >
+
+            <button type="submit">Remove Rating</button>
+        </form>
+    <?php endif; ?>
+
     <h2>Quotes</h2>
 
     <form action="/quotes" method="POST">
@@ -114,6 +130,43 @@
             <small>
                 <?= htmlspecialchars($quote["created_at"]) ?>
             </small>
+
+            <form action="/quotes/update" method="POST">
+                <input
+                    type="hidden"
+                    name="quote_id"
+                    value="<?= (int) $quote["quote_id"] ?>"
+                >
+
+                <input
+                    type="hidden"
+                    name="book_id"
+                    value="<?= (int) $book["book_id"] ?>"
+                >
+
+                <textarea
+                    name="quote_text"
+                    required
+                ><?= htmlspecialchars($quote["quote_text"]) ?></textarea>
+
+                <button type="submit">Update Quote</button>
+            </form>
+
+            <form action="/quotes/delete" method="POST">
+                <input
+                    type="hidden"
+                    name="quote_id"
+                    value="<?= (int) $quote["quote_id"] ?>"
+                >
+
+                <input
+                    type="hidden"
+                    name="book_id"
+                    value="<?= (int) $book["book_id"] ?>"
+                >
+
+                <button type="submit">Delete Quote</button>
+            </form>
         <?php endforeach; ?>
     <?php endif; ?>
 

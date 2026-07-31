@@ -96,6 +96,98 @@ class BookController
         ]);
     }
 
+    public function edit(): void
+    {
+        $userId = $this->requireAuthenticatedUserId();
+        $bookId = filter_var(
+            $this->request->query("book_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        if ($bookId === false) {
+            $this->renderNotFound();
+            return;
+        }
+
+        $book = $this->findBookForUser($userId, $bookId);
+
+        if ($book === false) {
+            $this->renderNotFound();
+            return;
+        }
+
+        view("book-edit", [
+            "book" => $book,
+            "genres" => $this->findAllGenres(),
+            "selectedGenreIds" => $this->findGenreIdsForBook($bookId)
+        ]);
+    }
+
+    public function update(): void
+    {
+        $userId = $this->requireAuthenticatedUserId();
+        $bookId = filter_var(
+            $this->request->input("book_id"),
+            FILTER_VALIDATE_INT
+        );
+
+        if (
+            $bookId === false ||
+            $this->findBookForUser($userId, $bookId) === false
+        ) {
+            $this->renderNotFound();
+            return;
+        }
+
+        $bookData = $this->getBookFormData();
+        $genreIds = $this->normalizeGenreIds(
+            $this->request->input("genre_ids", [])
+        );
+        $validationError = $this->validateBookData($bookData);
+
+        if ($validationError !== null) {
+            $this->renderEditForm(
+                $bookId,
+                $bookData,
+                $genreIds,
+                $validationError
+            );
+            return;
+        }
+
+        try {
+            $this->database->beginTransaction();
+
+            $this->updateBookForUser($userId, $bookId, $bookData);
+            $this->replaceBookGenres($bookId, $genreIds);
+            $this->adjustReadingProgress(
+                $userId,
+                $bookId,
+                (int) $bookData["totalPage"]
+            );
+
+            $this->database->commit();
+
+            header(
+                "Location: /books/show?book_id=" . $bookId,
+                true,
+                303
+            );
+            exit;
+        } catch (Throwable) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+
+            $this->renderEditForm(
+                $bookId,
+                $bookData,
+                $genreIds,
+                "The book could not be updated."
+            );
+        }
+    }
+
     private function requireAuthenticatedUserId(): int
     {
         $userId = filter_var(
@@ -176,6 +268,27 @@ class BookController
         ]);
     }
 
+    private function renderEditForm(
+        int $bookId,
+        array $bookData,
+        array $genreIds,
+        string $error
+    ): void
+    {
+        view("book-edit", [
+            "error" => $error,
+            "book" => [
+                "book_id" => $bookId,
+                "title" => $bookData["title"],
+                "author" => $bookData["author"],
+                "description" => $bookData["description"],
+                "total_page" => $bookData["totalPage"]
+            ],
+            "genres" => $this->findAllGenres(),
+            "selectedGenreIds" => $genreIds
+        ]);
+    }
+
     private function insertBook(array $bookData): int
     {
         $bookInsertStatement = $this->database->prepare(
@@ -233,6 +346,65 @@ class BookController
         ]);
     }
 
+    private function updateBookForUser(
+        int $userId,
+        int $bookId,
+        array $bookData
+    ): void
+    {
+        $bookUpdateStatement = $this->database->prepare(
+            "UPDATE books
+            SET title = :title,
+                author = :author,
+                description = :description,
+                total_page = :total_page
+            WHERE book_id = :book_id
+              AND EXISTS (
+                  SELECT 1
+                  FROM reading_records
+                  WHERE reading_records.book_id = books.book_id
+                    AND reading_records.user_id = :user_id
+              )"
+        );
+
+        $bookUpdateStatement->execute([
+            "title" => $bookData["title"],
+            "author" => $bookData["author"],
+            "description" => $bookData["description"],
+            "total_page" => (int) $bookData["totalPage"],
+            "book_id" => $bookId,
+            "user_id" => $userId
+        ]);
+
+        if ($bookUpdateStatement->rowCount() !== 1) {
+            throw new RuntimeException("The book could not be updated.");
+        }
+    }
+
+    private function adjustReadingProgress(
+        int $userId,
+        int $bookId,
+        int $totalPage
+    ): void
+    {
+        $progressStatement = $this->database->prepare(
+            "UPDATE reading_records
+            SET current_page = CASE
+                WHEN book_status = 'completed' THEN :completed_total_page
+                ELSE LEAST(current_page, :maximum_page)
+            END
+            WHERE user_id = :user_id
+              AND book_id = :book_id"
+        );
+
+        $progressStatement->execute([
+            "completed_total_page" => $totalPage,
+            "maximum_page" => $totalPage,
+            "user_id" => $userId,
+            "book_id" => $bookId
+        ]);
+    }
+
     private function attachGenres(int $bookId, array $genreIds): void
     {
         if ($genreIds === []) {
@@ -250,6 +422,20 @@ class BookController
                 "genre_id" => $genreId
             ]);
         }
+    }
+
+    private function replaceBookGenres(int $bookId, array $genreIds): void
+    {
+        $genreDeleteStatement = $this->database->prepare(
+            "DELETE FROM book_genres
+            WHERE book_id = :book_id"
+        );
+
+        $genreDeleteStatement->execute([
+            "book_id" => $bookId
+        ]);
+
+        $this->attachGenres($bookId, $genreIds);
     }
 
     private function findBookForUser(int $userId, int $bookId): array|false
@@ -325,6 +511,24 @@ class BookController
         ]);
 
         return $ratingStatement->fetchColumn();
+    }
+
+    private function findGenreIdsForBook(int $bookId): array
+    {
+        $genreStatement = $this->database->prepare(
+            "SELECT genre_id
+            FROM book_genres
+            WHERE book_id = :book_id"
+        );
+
+        $genreStatement->execute([
+            "book_id" => $bookId
+        ]);
+
+        return array_map(
+            "intval",
+            $genreStatement->fetchAll(PDO::FETCH_COLUMN)
+        );
     }
 
     private function findAllGenres(): array
