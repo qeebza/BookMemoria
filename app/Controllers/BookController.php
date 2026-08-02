@@ -55,7 +55,13 @@ class BookController
             return;
         }
 
+        $newCover = null;
+
         try {
+            $newCover = $this->storeIsbnCover($bookData["isbn"]);
+            $bookData["coverPagePath"] = $newCover["url"] ?? null;
+            $bookData["coverPublicId"] = $newCover["publicId"] ?? null;
+
             $this->database->beginTransaction();
 
             $bookId = $this->insertBook($bookData);
@@ -69,6 +75,10 @@ class BookController
         } catch (Throwable) {
             if ($this->database->inTransaction()) {
                 $this->database->rollBack();
+            }
+
+            if ($newCover !== null) {
+                $this->deleteCloudCover($newCover["publicId"]);
             }
 
             $this->renderCreateForm(
@@ -195,6 +205,8 @@ class BookController
         try {
             if ($this->hasCoverUpload($coverUpload)) {
                 $newCover = $this->storeCoverUpload($coverUpload);
+            } elseif ($currentCoverPath === null || $currentCoverPath === "") {
+                $newCover = $this->storeIsbnCover($bookData["isbn"]);
             }
 
             $bookData["coverPagePath"] = $newCover["url"]
@@ -266,12 +278,7 @@ class BookController
             $this->database->beginTransaction();
 
             $this->deleteUserBookData($userId, $bookId);
-
-            if (!$this->bookHasReaders($bookId)) {
-                $this->deleteBookGenres($bookId);
-                $this->deleteBook($bookId);
-                $bookWasDeleted = true;
-            }
+            $bookWasDeleted = $this->deleteBookIfUnused($bookId);
 
             $this->database->commit();
         } catch (Throwable) {
@@ -487,14 +494,18 @@ class BookController
                 author,
                 isbn,
                 description,
-                total_page
+                total_page,
+                cover_page_path,
+                cover_public_id
             )
             VALUES (
                 :title,
                 :author,
                 :isbn,
                 :description,
-                :total_page
+                :total_page,
+                :cover_page_path,
+                :cover_public_id
             )
             RETURNING book_id"
         );
@@ -504,7 +515,9 @@ class BookController
             "author" => $bookData["author"],
             "isbn" => $bookData["isbn"] === "" ? null : $bookData["isbn"],
             "description" => $bookData["description"],
-            "total_page" => (int) $bookData["totalPage"]
+            "total_page" => (int) $bookData["totalPage"],
+            "cover_page_path" => $bookData["coverPagePath"],
+            "cover_public_id" => $bookData["coverPublicId"]
         ]);
 
         $bookId = $bookInsertStatement->fetchColumn();
@@ -644,40 +657,37 @@ class BookController
         }
     }
 
-    private function bookHasReaders(int $bookId): bool
+    private function deleteBookIfUnused(int $bookId): bool
     {
-        $statement = $this->database->prepare(
-            "SELECT EXISTS (
-                SELECT 1
-                FROM reading_records
-                WHERE book_id = :book_id
-            )"
-        );
-        $statement->execute(["book_id" => $bookId]);
-
-        return (bool) $statement->fetchColumn();
-    }
-
-    private function deleteBookGenres(int $bookId): void
-    {
-        $statement = $this->database->prepare(
+        $genreStatement = $this->database->prepare(
             "DELETE FROM book_genres
-            WHERE book_id = :book_id"
+            WHERE book_id = :book_id
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM reading_records
+                  WHERE reading_records.book_id = :reader_book_id
+              )"
         );
-        $statement->execute(["book_id" => $bookId]);
-    }
+        $genreStatement->execute([
+            "book_id" => $bookId,
+            "reader_book_id" => $bookId
+        ]);
 
-    private function deleteBook(int $bookId): void
-    {
-        $statement = $this->database->prepare(
+        $bookStatement = $this->database->prepare(
             "DELETE FROM books
-            WHERE book_id = :book_id"
+            WHERE book_id = :book_id
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM reading_records
+                  WHERE reading_records.book_id = :reader_book_id
+              )"
         );
-        $statement->execute(["book_id" => $bookId]);
+        $bookStatement->execute([
+            "book_id" => $bookId,
+            "reader_book_id" => $bookId
+        ]);
 
-        if ($statement->rowCount() !== 1) {
-            throw new RuntimeException("The book could not be deleted.");
-        }
+        return $bookStatement->rowCount() === 1;
     }
 
     private function attachGenres(int $bookId, array $genreIds): void
@@ -769,6 +779,38 @@ class BookController
 
         if (!is_string($url) || !is_string($publicId)) {
             throw new RuntimeException("Cloudinary did not return the cover details.");
+        }
+
+        return [
+            "url" => $url,
+            "publicId" => $publicId
+        ];
+    }
+
+    private function storeIsbnCover(string $isbn): ?array
+    {
+        if ($isbn === "") {
+            return null;
+        }
+
+        $coverUrl = "https://covers.openlibrary.org/b/isbn/"
+            . rawurlencode($isbn)
+            . "-L.jpg?default=false";
+
+        try {
+            $result = $this->cloudinary->uploadApi()->upload($coverUrl, [
+                "folder" => "bookmemoria/covers",
+                "resource_type" => "image"
+            ]);
+        } catch (Throwable) {
+            return null;
+        }
+
+        $url = $result["secure_url"] ?? null;
+        $publicId = $result["public_id"] ?? null;
+
+        if (!is_string($url) || !is_string($publicId)) {
+            return null;
         }
 
         return [

@@ -21,10 +21,6 @@
             display: none;
         }
 
-        .book-cover-thumbnail[hidden] {
-            display: none;
-        }
-
         .book-cover-placeholder {
             display: flex;
             align-items: center;
@@ -53,9 +49,49 @@
 
     <h2>My Books</h2>
 
+    <form action="/dashboard" method="GET">
+        <div>
+            <label for="q">Search</label>
+            <input
+                type="search"
+                id="q"
+                name="q"
+                value="<?= htmlspecialchars($filters["q"]) ?>"
+                placeholder="Title, author, or ISBN"
+            >
+        </div>
+
+        <div>
+            <label for="genre_id">Genre</label>
+            <select id="genre_id" name="genre_id">
+                <option value="">All genres</option>
+
+                <?php foreach ($genres as $genre): ?>
+                    <?php $genreId = (string) $genre["genre_id"]; ?>
+
+                    <option
+                        value="<?= htmlspecialchars($genreId) ?>"
+                        <?= $filters["genreId"] === $genreId ? "selected" : "" ?>
+                    >
+                        <?= htmlspecialchars($genre["genre_name"]) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <button type="submit">Search Books</button>
+        <a href="/dashboard">Clear</a>
+    </form>
+
     <?php if (empty($books)): ?>
-        <p>You have not added any books yet.</p>
+        <p>
+            <?= $hasFilters
+                ? "No books match your search."
+                : "You have not added any books yet." ?>
+        </p>
     <?php else: ?>
+        <p><?= count($books) ?> book(s) found.</p>
+
         <table>
             <thead>
                 <tr>
@@ -74,13 +110,11 @@
             <tbody>
                 <?php foreach ($books as $book): ?>
                     <?php
-                        $coverUrl = $book["cover_page_path"] ?? "";
-
-                        if ($coverUrl === "" && !empty($book["isbn"])) {
-                            $coverUrl = "https://covers.openlibrary.org/b/isbn/"
-                                . rawurlencode($book["isbn"])
-                                . "-M.jpg?default=false";
-                        }
+                        $coverUrl = optimized_cover_url(
+                            $book["cover_page_path"] ?? null,
+                            240,
+                            360
+                        );
                     ?>
 
                     <tr>

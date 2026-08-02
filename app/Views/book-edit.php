@@ -21,10 +21,6 @@
             display: none;
         }
 
-        .book-cover-preview[hidden] {
-            display: none;
-        }
-
         .book-cover-placeholder {
             display: flex;
             align-items: center;
@@ -130,13 +126,11 @@
             <label for="cover">Book cover</label>
 
             <?php
-                $previewCoverUrl = $book["cover_page_path"] ?? "";
-
-                if ($previewCoverUrl === "" && !empty($book["isbn"])) {
-                    $previewCoverUrl = "https://covers.openlibrary.org/b/isbn/"
-                        . rawurlencode($book["isbn"])
-                        . "-M.jpg?default=false";
-                }
+                $previewCoverUrl = optimized_cover_url(
+                    $book["cover_page_path"] ?? null,
+                    300,
+                    450
+                );
             ?>
 
             <?php if ($previewCoverUrl !== ""): ?>

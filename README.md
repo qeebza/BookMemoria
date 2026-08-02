@@ -6,11 +6,12 @@ BookMemoria is a personal book-tracking web application built from scratch with 
 
 - User registration, login, logout, and protected pages
 - Personal reading dashboard
+- Dashboard search and genre filtering
 - Book details, genres, reading status, and page progress
 - Reading start and completion dates
 - Quotes and ratings
 - Book editing and deletion
-- Cloudinary book-cover uploads and removal
+- Cloudinary book-cover uploads, ISBN caching, optimization, and removal
 - Optional ISBN-10 and ISBN-13 storage
 - ISBN Search links for finding book information
 - Direct ISBN-based cover image links
@@ -68,7 +69,7 @@ BookMemoria is a personal book-tracking web application built from scratch with 
 
 ## Finding a book or cover by ISBN
 
-Enter an ISBN-10 or ISBN-13 when adding or editing a book. The book details page then links to its ISBN Search record and builds the cover URL automatically using that ISBN.
+Enter an ISBN-10 or ISBN-13 when adding or editing a book. When no cover has been uploaded, BookMemoria attempts to import the ISBN cover into Cloudinary once. Normal pages then use resized, automatically formatted, and quality-optimized Cloudinary images instead of repeatedly loading the external ISBN image.
 
 Open Library cover URL format:
 
